@@ -1,4 +1,4 @@
-from gui.main_window import App
+from views.main_window import App
 
 
 def main():

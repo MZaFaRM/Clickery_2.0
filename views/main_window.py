@@ -1,7 +1,10 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter
-import operations.general as operations
+import controllers.general as operations
+import json
+import sys
+import traceback
 
 customtkinter.set_appearance_mode(
     "System"
@@ -38,14 +41,14 @@ class App(customtkinter.CTk):
         self.TextInput = customtkinter.CTkButton(
             self.sidebar_frame,
             text="Text Input",
-            command=operations.text_input_dialog_event
+            command=operations.text_input_dialog_event,
         )
         self.TextInput.grid(row=1, column=0, padx=20, pady=10)
 
         # Option menu
         self.DelayOperation = customtkinter.CTkOptionMenu(
             self.sidebar_frame,
-            values=["Wait (Seconds)", "Wait (Image)", "Wait (Key)"],
+            values=["- Seconds", "- Image", "- Key"],
             command=self.delay_option,
             variable=customtkinter.StringVar(value="Delay"),
             anchor="center",
@@ -108,33 +111,50 @@ class App(customtkinter.CTk):
         # create tabview
         self.tabview = customtkinter.CTkTabview(self, width=250)
         self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.tabview.add("CTkTabview")
-        self.tabview.add("Tab 2")
-        self.tabview.add("Tab 3")
-        self.tabview.tab("CTkTabview").grid_columnconfigure(
-            0, weight=1
-        )  # configure grid of individual tabs
-        self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
+        self.tabview.add("Save")
+        self.tabview.add("Modify")
+        self.tabview.add("Insert")
+        
+        self.tabview.tab("Save").grid_columnconfigure(0, weight=1)
+        self.tabview.tab("Modify").grid_columnconfigure(0, weight=1)
+        self.tabview.tab("Insert").grid_columnconfigure(0, weight=1)
 
-        self.optionmenu = customtkinter.CTkOptionMenu(
-            self.tabview.tab("CTkTabview"),
-            dynamic_resizing=False,
-            values=["Value 1", "Value 2", "Value Long Long Long"],
+        self.input_save_event = customtkinter.CTkButton(
+            self.tabview.tab("Save"),
+            text="Format",
+            command=self.format_data
         )
-        self.combobox_1 = customtkinter.CTkComboBox(
-            self.tabview.tab("CTkTabview"),
-            values=["Value 1", "Value 2", "Value Long....."],
+        self.input_save_event.grid(row=0, column=0, padx=20, pady=(30, 10))
+        
+        self.input_save_event = customtkinter.CTkButton(
+            self.tabview.tab("Save"),
+            text="Save",
         )
-        self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
-        self.string_input_button = customtkinter.CTkButton(
-            self.tabview.tab("CTkTabview"),
-            text="Open CTkInputDialog",
+        self.input_save_event.grid(row=1, column=0, padx=20, pady=(10, 10))
+        
+        self.input_insert_event = customtkinter.CTkButton(
+            self.tabview.tab("Insert"),
+            text="Insert action",
         )
-        self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
-        self.label_tab_2 = customtkinter.CTkLabel(
-            self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2"
+        self.input_insert_event.grid(row=0, column=0, padx=20, pady=(30, 10))
+
+        self.input_duplicate_event = customtkinter.CTkButton(
+            self.tabview.tab("Insert"),
+            text="Duplicate action",
         )
-        self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
+        self.input_duplicate_event.grid(row=1, column=0, padx=20, pady=(10, 10))
+        
+        self.input_replace_event = customtkinter.CTkButton(
+            self.tabview.tab("Modify"),
+            text="Replace action",
+        )
+        self.input_replace_event.grid(row=0, column=0, padx=20, pady=(30, 10))
+
+        self.input_remove_event = customtkinter.CTkButton(
+            self.tabview.tab("Modify"),
+            text="Remove action",
+        )
+        self.input_remove_event.grid(row=1, column=0, padx=20, pady=(10, 10))
 
         # create radiobutton frame
         self.radiobutton_frame = customtkinter.CTkFrame(self)
@@ -178,43 +198,11 @@ class App(customtkinter.CTk):
         self.switch_2.grid(row=4, column=0, pady=(10, 20), padx=20, sticky="n")
 
         # create slider and progressbar frame
-        self.slider_progressbar_frame = customtkinter.CTkFrame(
-            self, fg_color="transparent"
+        self.exception_field = customtkinter.CTkTextbox(
+            self
         )
-        self.slider_progressbar_frame.grid(
+        self.exception_field.grid(
             row=1, column=1, columnspan=2, padx=(20, 0), pady=(20, 0), sticky="nsew"
-        )
-        self.slider_progressbar_frame.grid_columnconfigure(0, weight=1)
-        self.slider_progressbar_frame.grid_rowconfigure(4, weight=1)
-        self.seg_button_1 = customtkinter.CTkSegmentedButton(
-            self.slider_progressbar_frame
-        )
-        self.seg_button_1.grid(
-            row=0, column=0, padx=(20, 10), pady=(10, 10), sticky="ew"
-        )
-        self.progressbar_1 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
-        self.progressbar_1.grid(
-            row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew"
-        )
-        self.progressbar_2 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
-        self.progressbar_2.grid(
-            row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew"
-        )
-        self.slider_1 = customtkinter.CTkSlider(
-            self.slider_progressbar_frame, from_=0, to=1, number_of_steps=4
-        )
-        self.slider_1.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.slider_2 = customtkinter.CTkSlider(
-            self.slider_progressbar_frame, orientation="vertical"
-        )
-        self.slider_2.grid(
-            row=0, column=1, rowspan=5, padx=(10, 10), pady=(10, 10), sticky="ns"
-        )
-        self.progressbar_3 = customtkinter.CTkProgressBar(
-            self.slider_progressbar_frame, orientation="vertical"
-        )
-        self.progressbar_3.grid(
-            row=0, column=2, rowspan=5, padx=(10, 20), pady=(10, 10), sticky="ns"
         )
 
         # set default values
@@ -225,19 +213,12 @@ class App(customtkinter.CTk):
         self.radio_button_3.configure(state="disabled")
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
-        self.combobox_1.set("CTkComboBox")
-        self.slider_1.configure(command=self.progressbar_2.set)
-        self.slider_2.configure(command=self.progressbar_3.set)
-        self.progressbar_1.configure(mode="indeterminnate")
-        self.progressbar_1.start()
         self.textbox.insert(
             "0.0",
-            "CTkTextbox\n\n"
-            + "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.\n\n"
-            * 20,
+            "[{\"wait_key\":\"caps lock\",\"id\": 1},{\"key\": \"esc\",\"id\": 2}]",
         )
-        self.seg_button_1.configure(values=["CTkSegmentedButton", "Value 2", "Value 3"])
-        self.seg_button_1.set("Value 2")
+        self.exception_field.configure(state="disabled")
+
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
@@ -249,7 +230,42 @@ class App(customtkinter.CTk):
     def delay_option(self, value=""):
         operations.delay_option(value)
         self.DelayOperation.set("Delay")
+        
+    def format_data(self):
+        try:
+            data = self.textbox.get("0.0", "end")
+            data = json.loads(data)
+            data = json.dumps(data, indent=2)
+            
+            self.textbox.delete("0.0", "end")
+            self.textbox.insert("0.0", data)
+            
+            self.exception_display(None)
+            
+        except Exception as ex:
+            
+            self.exception_display(ex)
+            
+    def exception_display(self, ex):
+        
+        self.exception_field.configure(state="normal")
+        
+        if ex:
+            self.exception_field.configure(text_color="#CC3636")
+            # Get current system exception
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            exception_details = f"Exception type : {ex_type.__name__}\nException message : {ex_value}"
+            
+        else:
 
+            self.exception_field.configure(text_color="#367E18")
+            exception_details = "Format Success!"
+            
+        self.exception_field.delete("0.0", "end")
+        self.exception_field.insert("0.0", exception_details)
+        self.exception_field.configure(state="disabled")
+            
+            
 
 if __name__ == "__main__":
     app = App()

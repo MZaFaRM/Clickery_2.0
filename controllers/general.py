@@ -1,8 +1,10 @@
 from tkinter.filedialog import asksaveasfile
 from keyboard import normalize_name
 import pyautogui
-import gui.dialogs.dialogs as dialogs
-from gui.dialogs.directory import folder
+import views.dialogs.dialogs as dialogs
+from views.dialogs.directory import folder
+from universal import config
+import json
 
 
 def key_input_dialog_event():
@@ -35,13 +37,13 @@ def hotkey_input_dialog_event():
 
 
 def delay_option(value=""):
-    if value == "Wait (Key)":
+    if value == "- Key":
         return wait_key_dialog_event()
     
-    elif value == "Wait (Seconds)":
+    elif value == "- Seconds":
         return wait_time_event()
     
-    elif value == "Wait (Image)":
+    elif value == "- Image":
         ftypes = [("png files", "*.png"), ("All files", "*")]
         location = folder(ftypes)
         if location:
@@ -68,6 +70,7 @@ def wait_time_event():
         return {"hotkey": time}
     else:
         return 0
+
 
 
 # class ToModify:
