@@ -1,76 +1,87 @@
 from tkinter.filedialog import asksaveasfile
-from keyboard import normalize_name
-import pyautogui
 import views.dialogs.dialogs as dialogs
 from views.dialogs.directory import folder
-from universal import config
+from control.pickler import insert_event
 import json
+import sys
 
 
-def key_input_dialog_event():
+def key_input_dialog_event(app):
     dialog = dialogs.KeyInputDialog(text="Input a key:", title="Key Input")
     input_text = dialog.get_input()
     if input_text:
         print("InputDialog:", input_text)
-        return {"key": input_text}
+        return insert_event({"key": input_text}, app)
     return 0
 
 
-def wait_key_dialog_event():
+def wait_key_dialog_event(app):
     dialog = dialogs.KeyInputDialog(text="Input a key to wait for:", title="Key Input")
     input_text = dialog.get_input()
     if input_text:
         print("InputDialog:", input_text)
-        return {"wait_key": input_text}
+        return insert_event({"wait_key": input_text}, app)
     return 0
 
 
-def hotkey_input_dialog_event():
+def hotkey_input_dialog_event(app):
     dialog = dialogs.HotKeyInputDialog(
         text="Insert keyboard shortcut:", title="Keyboard Shortcut"
     )
     input_text = dialog.get_input()
     if input_text:
         print("InputDialog:", input_text)
-        return {"hotkey": input_text}
+        return insert_event({"hotkey": input_text}, app)
     return 0
 
 
-def delay_option(value=""):
+def delay_option(value, app):
     if value == "- Key":
-        return wait_key_dialog_event()
+        return wait_key_dialog_event(app)
     
     elif value == "- Seconds":
-        return wait_time_event()
+        return wait_time_event(app)
     
     elif value == "- Image":
         ftypes = [("png files", "*.png"), ("All files", "*")]
         location = folder(ftypes)
         if location:
-            return {"image": location}
+            return insert_event({"image": location}, app)
     return 0
 
 
-def text_input_dialog_event():
+def text_input_dialog_event(app):
     dialog = dialogs.TextInputDialog(text="Write the text here:", title="Text Insert")
     input_text = dialog.get_input()
     if input_text:
         print("InputDialog:", input_text)
-        return {"hotkey": input_text}
+        return insert_event({"write": input_text}, app)
     return 0
 
 
-def wait_time_event():
+def wait_time_event(app):
 
     # gets input
     dialog = dialogs.WaitTimeDialog(text="Time to wait in seconds:", title="Wait for time")
-    time = int(dialog.get_input())
+    time = dialog.get_input()
     if time:
+        time = int(time)
         print("InputDialog:", time)
-        return {"hotkey": time}
+        return insert_event({"wait": time}, app)
     else:
         return 0
 
+def remove_action_event(app):
+    dialog = dialogs.RemoveActionDialog(text="ID of action to remove:", title="Remove Action")
+    action_id = dialog.get_input()
+    if action_id:
+        action_id = int(action_id)
+        from universal import config
+        result = [item for item in config.actions if item["id"] == action_id]
+        config.actions.pop(config.actions.index(result[0]))
+        print("InputDialog:", action_id)
+        return insert_event(None, app)
+    return 0
 
 
 # class ToModify:

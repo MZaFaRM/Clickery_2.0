@@ -1,8 +1,8 @@
 from keyboard import hook, unhook_all, normalize_name
 from typing import Union, Tuple, Optional
 import customtkinter
-from time import sleep
-import threading
+from universal import config
+
 
 class BaseDialog(customtkinter.CTkToplevel):
     def __init__(
@@ -17,6 +17,7 @@ class BaseDialog(customtkinter.CTkToplevel):
         entry_text_color: Optional[Union[str, Tuple[str, str]]] = None,
         title: str = "CTkDialog",
         text: str = "CTkDialog",
+        text_1: str = "CTkDialog"
     ):
 
         super().__init__(fg_color=fg_color)
@@ -65,6 +66,7 @@ class BaseDialog(customtkinter.CTkToplevel):
         self._user_input: Union[str, None] = None
         self._running: bool = False
         self._text = text
+        self._text_1 = text_1
 
         self.title(title)
         self.lift()  # lift window on top
@@ -145,12 +147,25 @@ class BaseDialog(customtkinter.CTkToplevel):
         self.destroy()
 
     def _cancel_event(self):
+        self._user_input = None
         self.grab_release()
         self.destroy()
 
     def get_input(self):
         self.master.wait_window(self)
         return self._user_input
+
+    def verification(self, message=""):
+        self._entry.configure(text_color="red")
+        self._entry.delete(0, "end")
+        self._entry.insert(0, message)
+        self.after(
+            1000,
+            lambda: (
+                self._entry.configure(text_color=self._entry_text_color),
+                self._entry.delete(0, "end"),
+            ),
+        )
 
 
 # Granchildren
@@ -163,7 +178,7 @@ class TextInputDialog(BaseDialog, customtkinter.CTkToplevel):
         self._entry.grid(
             row=1, column=0, columnspan=2, padx=20, pady=(0, 20), sticky="ew"
         )
-        
+
     def _ok_event(self, event=None):
         self._user_input = self._entry.get(1.0, "end-1c")
         self.grab_release()
@@ -236,24 +251,34 @@ class KeyInputDialog(HotKeyInputDialog, customtkinter.CTkToplevel):
             _inputbox.delete(0, "end")
             _inputbox.insert(0, key_input)
             _inputbox.configure(state="disabled")
-            
-            
+
+
 class WaitTimeDialog(BaseDialog, customtkinter.CTkToplevel):
-        
     def _ok_event(self, event=None):
         self._user_input = self._entry.get()
-        
+
         if self._user_input.isdigit():
             self.grab_release()
             self.destroy()
-            
+
         else:
-            self._entry.configure(text_color="red")
-            self._entry.delete(0, "end")
-            self._entry.insert(0, "Value Error")
-            self.after(1000, lambda: (self._entry.configure(text_color=self._entry_text_color), self._entry.delete(0, "end")))
+            self.verification(message="Value Error")
 
 
-if __name__ == "__main__":
-    dialog = WaitTimeDialog(text="Type in a number:", title="CTkInputDialog")
-    print("CTkInputDialog:", dialog.get_input())
+class RemoveActionDialog(WaitTimeDialog, BaseDialog, customtkinter.CTkToplevel):
+    def _ok_event(self, event=None):
+        self._user_input = self.action_id.get()
+
+        if not self._user_input.isdigit():
+            self.verification(message="Value Error")
+
+        elif int(self._user_input) >= len(config.actions) or int(self._user_input) < 0:
+            self.verification(message="Index Error")
+        else:
+            self.grab_release()
+            self.destroy()
+
+
+# if __name__ == "__main__":
+#     dialog = (text="ID of action to move:", text_1="Index of destination:", title="Move Action")
+#     print("CTkInputDialog:", dialog.get_input())

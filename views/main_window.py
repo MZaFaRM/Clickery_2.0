@@ -1,10 +1,9 @@
 import tkinter
 import tkinter.messagebox
 import customtkinter
-import controllers.general as operations
-import json
+from control import general
 import sys
-import traceback
+from control import pickler
 
 customtkinter.set_appearance_mode(
     "System"
@@ -41,7 +40,7 @@ class App(customtkinter.CTk):
         self.TextInput = customtkinter.CTkButton(
             self.sidebar_frame,
             text="Text Input",
-            command=operations.text_input_dialog_event,
+            command=lambda: general.text_input_dialog_event(self),
         )
         self.TextInput.grid(row=1, column=0, padx=20, pady=10)
 
@@ -57,13 +56,13 @@ class App(customtkinter.CTk):
 
         self.KeyInput = customtkinter.CTkButton(
             self.sidebar_frame,
-            command=operations.key_input_dialog_event,
+            command=lambda: general.key_input_dialog_event(self),
             text="Insert Key",
         )
         self.KeyInput.grid(row=3, column=0, padx=20, pady=10)
         self.HotkeyInput = customtkinter.CTkButton(
             self.sidebar_frame,
-            command=operations.hotkey_input_dialog_event,
+            command=lambda: general.hotkey_input_dialog_event (self),
             text="Insert Hotkey",
         )
         self.HotkeyInput.grid(row=4, column=0, padx=20, pady=10)
@@ -113,48 +112,50 @@ class App(customtkinter.CTk):
         self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
         self.tabview.add("Save")
         self.tabview.add("Modify")
-        self.tabview.add("Insert")
+        self.tabview.add("Export")
         
         self.tabview.tab("Save").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Modify").grid_columnconfigure(0, weight=1)
-        self.tabview.tab("Insert").grid_columnconfigure(0, weight=1)
+        self.tabview.tab("Export").grid_columnconfigure(0, weight=1)
 
-        self.input_save_event = customtkinter.CTkButton(
+        self.clean_data_event = customtkinter.CTkButton(
             self.tabview.tab("Save"),
-            text="Format",
-            command=self.format_data
+            text="Clean data",
+            command=lambda: pickler.clean_data(self)
         )
-        self.input_save_event.grid(row=0, column=0, padx=20, pady=(30, 10))
+        self.clean_data_event.grid(row=0, column=0, padx=20, pady=(30, 10))
         
         self.input_save_event = customtkinter.CTkButton(
             self.tabview.tab("Save"),
             text="Save",
+            command=lambda: pickler.save_events(self)
         )
         self.input_save_event.grid(row=1, column=0, padx=20, pady=(10, 10))
         
-        self.input_insert_event = customtkinter.CTkButton(
-            self.tabview.tab("Insert"),
-            text="Insert action",
-        )
-        self.input_insert_event.grid(row=0, column=0, padx=20, pady=(30, 10))
+        # self.input_insert_event = customtkinter.CTkButton(
+        #     self.tabview.tab("Insert"),
+        #     text="Insert action",
+        # )
+        # self.input_insert_event.grid(row=0, column=0, padx=20, pady=(30, 10))
 
+        # self.input_duplicate_event = customtkinter.CTkButton(
+        #     self.tabview.tab("Insert"),
+        #     text="Duplicate action",
+        # )
+        # self.input_duplicate_event.grid(row=1, column=0, padx=20, pady=(10, 10))
+        
         self.input_duplicate_event = customtkinter.CTkButton(
-            self.tabview.tab("Insert"),
+            self.tabview.tab("Modify"),
             text="Duplicate action",
         )
-        self.input_duplicate_event.grid(row=1, column=0, padx=20, pady=(10, 10))
-        
-        self.input_replace_event = customtkinter.CTkButton(
-            self.tabview.tab("Modify"),
-            text="Replace action",
-        )
-        self.input_replace_event.grid(row=0, column=0, padx=20, pady=(30, 10))
+        self.input_duplicate_event.grid(row=1, column=0, padx=20, pady=(30, 10))
 
         self.input_remove_event = customtkinter.CTkButton(
             self.tabview.tab("Modify"),
             text="Remove action",
+            command=lambda: general.remove_action_event(self)
         )
-        self.input_remove_event.grid(row=1, column=0, padx=20, pady=(10, 10))
+        self.input_remove_event.grid(row=2, column=0, padx=20, pady=(10, 10))
 
         # create radiobutton frame
         self.radiobutton_frame = customtkinter.CTkFrame(self)
@@ -228,42 +229,26 @@ class App(customtkinter.CTk):
         customtkinter.set_widget_scaling(new_scaling_float)
 
     def delay_option(self, value=""):
-        operations.delay_option(value)
+        general.delay_option(value, self)
         self.DelayOperation.set("Delay")
         
-    def format_data(self):
-        try:
-            data = self.textbox.get("0.0", "end")
-            data = json.loads(data)
-            data = json.dumps(data, indent=2)
-            
-            self.textbox.delete("0.0", "end")
-            self.textbox.insert("0.0", data)
-            
-            self.exception_display(None)
-            
-        except Exception as ex:
-            
-            self.exception_display(ex)
-            
-    def exception_display(self, ex):
+    def exception_display(app, ex):
         
-        self.exception_field.configure(state="normal")
+        app.exception_field.configure(state="normal")
         
         if ex:
-            self.exception_field.configure(text_color="#CC3636")
+            app.exception_field.configure(text_color="#CC3636")
             # Get current system exception
             ex_type, ex_value, ex_traceback = sys.exc_info()
             exception_details = f"Exception type : {ex_type.__name__}\nException message : {ex_value}"
             
         else:
-
-            self.exception_field.configure(text_color="#367E18")
+            app.exception_field.configure(text_color="#367E18")
             exception_details = "Format Success!"
             
-        self.exception_field.delete("0.0", "end")
-        self.exception_field.insert("0.0", exception_details)
-        self.exception_field.configure(state="disabled")
+        app.exception_field.delete("0.0", "end")
+        app.exception_field.insert("0.0", exception_details)
+        app.exception_field.configure(state="disabled")
             
             
 
