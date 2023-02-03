@@ -1,178 +1,17 @@
 from keyboard import hook, unhook_all, normalize_name
 from typing import Union, Tuple, Optional
 import customtkinter
+from views.dialogs import components
 from universal import config
 
-
-class BaseDialog(customtkinter.CTkToplevel):
-    def __init__(
-        self,
-        fg_color: Optional[Union[str, Tuple[str, str]]] = None,
-        text_color: Optional[Union[str, Tuple[str, str]]] = None,
-        button_fg_color: Optional[Union[str, Tuple[str, str]]] = None,
-        button_hover_color: Optional[Union[str, Tuple[str, str]]] = None,
-        button_text_color: Optional[Union[str, Tuple[str, str]]] = None,
-        entry_fg_color: Optional[Union[str, Tuple[str, str]]] = None,
-        entry_border_color: Optional[Union[str, Tuple[str, str]]] = None,
-        entry_text_color: Optional[Union[str, Tuple[str, str]]] = None,
-        title: str = "CTkDialog",
-        text: str = "CTkDialog",
-        text_1: str = "CTkDialog"
-    ):
-
-        super().__init__(fg_color=fg_color)
-
-        self._fg_color = (
-            customtkinter.ThemeManager.theme["CTkToplevel"]["fg_color"]
-            if fg_color is None
-            else self._check_color_type(fg_color)
-        )
-        self._text_color = (
-            customtkinter.ThemeManager.theme["CTkLabel"]["text_color"]
-            if text_color is None
-            else self._check_color_type(button_hover_color)
-        )
-        self._button_fg_color = (
-            customtkinter.ThemeManager.theme["CTkButton"]["fg_color"]
-            if button_fg_color is None
-            else self._check_color_type(button_fg_color)
-        )
-        self._button_hover_color = (
-            customtkinter.ThemeManager.theme["CTkButton"]["hover_color"]
-            if button_hover_color is None
-            else self._check_color_type(button_hover_color)
-        )
-        self._button_text_color = (
-            customtkinter.ThemeManager.theme["CTkButton"]["text_color"]
-            if button_text_color is None
-            else self._check_color_type(button_text_color)
-        )
-        self._entry_fg_color = (
-            customtkinter.ThemeManager.theme["CTkEntry"]["fg_color"]
-            if entry_fg_color is None
-            else self._check_color_type(entry_fg_color)
-        )
-        self._entry_border_color = (
-            customtkinter.ThemeManager.theme["CTkEntry"]["border_color"]
-            if entry_border_color is None
-            else self._check_color_type(entry_border_color)
-        )
-        self._entry_text_color = (
-            customtkinter.ThemeManager.theme["CTkEntry"]["text_color"]
-            if entry_text_color is None
-            else self._check_color_type(entry_text_color)
-        )
-
-        self._user_input: Union[str, None] = None
-        self._running: bool = False
-        self._text = text
-        self._text_1 = text_1
-
-        self.title(title)
-        self.lift()  # lift window on top
-        self.attributes("-topmost", True)  # stay on top
-        self.protocol("WM_DELETE_WINDOW", self._on_closing)
-        self.after(
-            10, self._create_widgets
-        )  # create widgets with slight delay, to avoid white flickering of background
-        self.resizable(False, False)
-        self.grab_set()  # make other windows not clickable
-
-    def _create_widgets(self):
-
-        self.grid_columnconfigure((0, 1), weight=1)
-        self.rowconfigure(0, weight=1)
-
-        self._label = customtkinter.CTkLabel(
-            master=self,
-            width=300,
-            wraplength=300,
-            fg_color="transparent",
-            text_color=self._text_color,
-            text=self._text,
-        )
-        self._label.grid(row=0, column=0, columnspan=2, padx=20, pady=20, sticky="ew")
-
-        self._entry = customtkinter.CTkEntry(
-            master=self,
-            width=230,
-            fg_color=self._entry_fg_color,
-            border_color=self._entry_border_color,
-            text_color=self._entry_text_color,
-        )
-        self._entry.grid(
-            row=1, column=0, columnspan=2, padx=20, pady=(0, 20), sticky="ew"
-        )
-
-        self._ok_button = customtkinter.CTkButton(
-            master=self,
-            width=100,
-            border_width=0,
-            fg_color=self._button_fg_color,
-            hover_color=self._button_hover_color,
-            text_color=self._button_text_color,
-            text="Ok",
-            command=self._ok_event,
-        )
-        self._ok_button.grid(
-            row=2, column=0, columnspan=1, padx=(20, 10), pady=(0, 20), sticky="ew"
-        )
-
-        self._cancel_button = customtkinter.CTkButton(
-            master=self,
-            width=100,
-            border_width=0,
-            fg_color=self._button_fg_color,
-            hover_color=self._button_hover_color,
-            text_color=self._button_text_color,
-            text="Cancel",
-            command=self._cancel_event,
-        )
-        self._cancel_button.grid(
-            row=2, column=1, columnspan=1, padx=(10, 20), pady=(0, 20), sticky="ew"
-        )
-
-        self.after(
-            150, lambda: self._entry.focus()
-        )  # set focus to entry with slight delay, otherwise it won't work
-        self._entry.bind("<Return>", self._ok_event)
-
-    def _ok_event(self, event=None):
-        self._user_input = self._entry.get()
-        self.grab_release()
-        self.destroy()
-
-    def _on_closing(self):
-        self.grab_release()
-        self.destroy()
-
-    def _cancel_event(self):
-        self._user_input = None
-        self.grab_release()
-        self.destroy()
-
-    def get_input(self):
-        self.master.wait_window(self)
-        return self._user_input
-
-    def verification(self, message=""):
-        self._entry.configure(text_color="red")
-        self._entry.delete(0, "end")
-        self._entry.insert(0, message)
-        self.after(
-            1000,
-            lambda: (
-                self._entry.configure(text_color=self._entry_text_color),
-                self._entry.delete(0, "end"),
-            ),
-        )
+# from universal import config
 
 
 # Granchildren
-class TextInputDialog(BaseDialog, customtkinter.CTkToplevel):
+class TextInputDialog(components.BaseDialog, customtkinter.CTkToplevel):
     def _create_widgets(self):
 
-        BaseDialog._create_widgets(self)
+        components.BaseDialog._create_widgets(self)
 
         self._entry = customtkinter.CTkTextbox(self, width=250)
         self._entry.grid(
@@ -185,9 +24,9 @@ class TextInputDialog(BaseDialog, customtkinter.CTkToplevel):
         self.destroy()
 
 
-class HotKeyInputDialog(BaseDialog, customtkinter.CTkToplevel):
+class HotKeyInputDialog(components.BaseDialog, customtkinter.CTkToplevel):
     def _create_widgets(self):
-        BaseDialog._create_widgets(self)
+        components.BaseDialog._create_widgets(self)
         self._entry.configure(state="disabled", justify="center")
         # List of keys
         self.hotkeyList = []
@@ -253,7 +92,7 @@ class KeyInputDialog(HotKeyInputDialog, customtkinter.CTkToplevel):
             _inputbox.configure(state="disabled")
 
 
-class WaitTimeDialog(BaseDialog, customtkinter.CTkToplevel):
+class WaitTimeDialog(components.BaseDialog, customtkinter.CTkToplevel):
     def _ok_event(self, event=None):
         self._user_input = self._entry.get()
 
@@ -262,23 +101,346 @@ class WaitTimeDialog(BaseDialog, customtkinter.CTkToplevel):
             self.destroy()
 
         else:
-            self.verification(message="Value Error")
+            self.return_error(message="Value Error")
 
 
-class RemoveActionDialog(WaitTimeDialog, BaseDialog, customtkinter.CTkToplevel):
-    def _ok_event(self, event=None):
-        self._user_input = self.action_id.get()
+class RemoveActionDialog(components.BaseDialog, customtkinter.CTkToplevel):
+    def _create_widgets(self):
 
-        if not self._user_input.isdigit():
-            self.verification(message="Value Error")
+        # self.grid_columnconfigure((0, 1), weight=1)
+        self.rowconfigure(0, weight=1)
 
-        elif int(self._user_input) >= len(config.actions) or int(self._user_input) < 0:
-            self.verification(message="Index Error")
-        else:
+        self._frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        self._frame.grid(row=0, column=0, columnspan=2, sticky="nsew")
+
+        self._label = customtkinter.CTkLabel(
+            master=self._frame,
+            width=150,
+            wraplength=150,
+            fg_color="transparent",
+            text_color=self._text_color,
+            text=self._text,
+        )
+        self._label.grid(
+            row=0, column=0, columnspan=1, padx=(20, 0), pady=(30, 10), sticky="ew"
+        )
+
+        self._spinbox_frame = customtkinter.CTkFrame(
+            self._frame, corner_radius=0, fg_color="transparent"
+        )
+        self._spinbox_frame.grid(
+            row=0,
+            column=1,
+            columnspan=2,
+            sticky="ew",
+            padx=(0, 20),
+            pady=(30, 10),
+        )
+        self._spinbox = components.BaseDialog.customSpinBox(
+            self, self._spinbox_frame, type="int"
+        )
+
+        self._label_1 = customtkinter.CTkLabel(
+            master=self._frame,
+            width=100,
+            wraplength=150,
+            fg_color="transparent",
+            text_color=self._text_color,
+            text=self._text_1,
+        )
+        self._label_1.grid(
+            row=1, column=0, columnspan=1, padx=(20, 0), pady=(10, 30), sticky="ew"
+        )
+
+        self._spinbox_frame_1 = customtkinter.CTkFrame(
+            self._frame, corner_radius=0, fg_color="transparent"
+        )
+        self._spinbox_frame_1.grid(
+            row=1,
+            column=1,
+            columnspan=2,
+            sticky="ew",
+            padx=(0, 20),
+            pady=(10, 30),
+        )
+        self._spinbox_1 = components.BaseDialog.customSpinBox(
+            self, self._spinbox_frame_1, type="int"
+        )
+
+        self._ok_button = customtkinter.CTkButton(
+            master=self,
+            width=100,
+            border_width=0,
+            fg_color=self._button_fg_color,
+            hover_color=self._button_hover_color,
+            text_color=self._button_text_color,
+            text="Ok",
+            command=self._ok_event,
+        )
+        self._ok_button.grid(
+            row=2, column=0, columnspan=1, padx=(20, 10), pady=(0, 20), sticky="ew"
+        )
+
+        self._cancel_button = customtkinter.CTkButton(
+            master=self,
+            width=100,
+            border_width=0,
+            fg_color=self._button_fg_color,
+            hover_color=self._button_hover_color,
+            text_color=self._button_text_color,
+            text="Cancel",
+            command=self._cancel_event,
+        )
+        self._cancel_button.grid(
+            row=2, column=1, columnspan=1, padx=(10, 20), pady=(0, 20), sticky="ew"
+        )
+
+        self.after(
+            150, lambda: self._spinbox.focus()
+        )  # set focus to entry with slight delay, otherwise it won't work
+        # self._entry.bind("<Return>", self._ok_event)
+        
+    def _ok_event(self):
+        
+        self._user_input = self.verify()
+        
+        if self._user_input:
+            
             self.grab_release()
             self.destroy()
+            
+        
+    def verify(self):
+        
+        self.widgets = [self._spinbox, self._spinbox_1]
+        
+        self._entry = self._spinbox.get()
+        self._entry_1 = self._spinbox_1.get()
+        
+        if not self._entry.isdigit() or not self._entry_1.isdigit():
+            return self.return_error(message="Type Error", widgets=self.widgets)
+            
+        self._entry = int(self._entry)
+        self._entry_1 = int(self._entry_1)
+        
+        self.return_value = (self._entry, self._entry_1)
+            
+        if self._entry_1 < self._entry:
+            return self.return_error(message="Index Error", widgets=self.widgets)
+        if self._entry <= -1:
+            return self.return_error(message="Index Error", widgets=self.widgets)
+        if self._entry > len(config.actions) or self._entry_1 > len(config.actions):
+            return self.return_error(message="Index Error", widgets=self.widgets)
+            
+        return self.return_value
+    
+    def return_error(self, message="", widgets = None):
+        
+        [item.configure(text_color="red") for item in widgets]
+        [item.delete(0, "end") for item in widgets]
+        [item.insert(0, message) for item in widgets]
+        [item.configure(text_color="red") for item in widgets]
 
+        self.after(
+            1000,
+            lambda: (
+                [item.configure(text_color=self._entry_text_color) for item in widgets],
+                [item.delete(0, "end") for item in widgets]
+            ),
+        )
+            
+            
+class DuplicateActionDialog(RemoveActionDialog, components.BaseDialog, customtkinter.CTkToplevel):
+    def _create_widgets(self):
 
-# if __name__ == "__main__":
-#     dialog = (text="ID of action to move:", text_1="Index of destination:", title="Move Action")
-#     print("CTkInputDialog:", dialog.get_input())
+        # self.grid_columnconfigure((0, 1), weight=1)
+        self.rowconfigure(0, weight=1)
+
+        self._frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        self._frame.grid(row=0, column=0, columnspan=2, sticky="nsew")
+
+        self._label = customtkinter.CTkLabel(
+            master=self._frame,
+            width=150,
+            wraplength=150,
+            fg_color="transparent",
+            text_color=self._text_color,
+            text=self._text,
+        )
+        self._label.grid(
+            row=0, column=0, columnspan=1, padx=(20, 0), pady=(30, 10), sticky="ew"
+        )
+
+        self._spinbox_frame = customtkinter.CTkFrame(
+            self._frame, corner_radius=0, fg_color="transparent"
+        )
+        self._spinbox_frame.grid(
+            row=0,
+            column=1,
+            columnspan=2,
+            sticky="ew",
+            padx=(0, 20),
+            pady=(30, 10),
+        )
+        self._spinbox = components.BaseDialog.customSpinBox(
+            self, self._spinbox_frame, type="int"
+        )
+
+        self._label_1 = customtkinter.CTkLabel(
+            master=self._frame,
+            width=100,
+            wraplength=150,
+            fg_color="transparent",
+            text_color=self._text_color,
+            text=self._text_1,
+        )
+        self._label_1.grid(
+            row=1, column=0, columnspan=1, padx=(20, 0), pady=(10, 10), sticky="ew"
+        )
+
+        self._spinbox_frame_1 = customtkinter.CTkFrame(
+            self._frame, corner_radius=0, fg_color="transparent"
+        )
+        self._spinbox_frame_1.grid(
+            row=1,
+            column=1,
+            columnspan=2,
+            sticky="ew",
+            padx=(0, 20),
+            pady=(10, 10),
+        )
+        self._spinbox_1 = components.BaseDialog.customSpinBox(
+            self, self._spinbox_frame_1, type="int"
+        )
+        
+        self._label_2 = customtkinter.CTkLabel(
+            master=self._frame,
+            width=150,
+            wraplength=150,
+            fg_color="transparent",
+            text_color=self._text_color,
+            text=self._text_2,
+        )
+        self._label_2.grid(
+            row=2, column=0, columnspan=1, padx=(20, 0), pady=(10, 10), sticky="ew"
+        )
+
+        self._spinbox_frame_2 = customtkinter.CTkFrame(
+            self._frame, corner_radius=0, fg_color="transparent"
+        )
+        self._spinbox_frame_2.grid(
+            row=2,
+            column=1,
+            columnspan=2,
+            sticky="ew",
+            padx=(0, 20),
+            pady=(10, 10),
+        )
+        self._spinbox_2 = components.BaseDialog.customSpinBox(
+            self, self._spinbox_frame_2, type="int"
+        )
+
+        self._label_3 = customtkinter.CTkLabel(
+            master=self._frame,
+            width=100,
+            wraplength=150,
+            fg_color="transparent",
+            text_color=self._text_color,
+            text=self._text_3,
+        )
+        self._label_3.grid(
+            row=3, column=0, columnspan=1, padx=(20, 0), pady=(10, 30), sticky="ew"
+        )
+
+        self._spinbox_frame_3 = customtkinter.CTkFrame(
+            self._frame, corner_radius=0, fg_color="transparent"
+        )
+        self._spinbox_frame_3.grid(
+            row=3,
+            column=1,
+            columnspan=2,
+            sticky="ew",
+            padx=(0, 20),
+            pady=(10, 30),
+        )
+        self._spinbox_3 = components.BaseDialog.customSpinBox(
+            self, self._spinbox_frame_3, type="int"
+        )
+
+        self._ok_button = customtkinter.CTkButton(
+            master=self,
+            width=100,
+            border_width=0,
+            fg_color=self._button_fg_color,
+            hover_color=self._button_hover_color,
+            text_color=self._button_text_color,
+            text="Ok",
+            command=self._ok_event,
+        )
+        self._ok_button.grid(
+            row=4, column=0, columnspan=1, padx=(20, 10), pady=(0, 20), sticky="ew"
+        )
+
+        self._cancel_button = customtkinter.CTkButton(
+            master=self,
+            width=100,
+            border_width=0,
+            fg_color=self._button_fg_color,
+            hover_color=self._button_hover_color,
+            text_color=self._button_text_color,
+            text="Cancel",
+            command=self._cancel_event,
+        )
+        self._cancel_button.grid(
+            row=4, column=1, columnspan=1, padx=(10, 20), pady=(0, 20), sticky="ew"
+        )
+
+        self.after(
+            150, lambda: self._spinbox.focus()
+        )  # set focus to entry with slight delay, otherwise it won't work
+        
+        
+        # self._entry.bind("<Return>", self._ok_event)
+    
+        
+    def _ok_event(self):
+        
+        self._user_input = self.verify()
+        
+        if self._user_input:
+            
+            self.grab_release()
+            self.destroy()
+            
+        
+    def verify(self):
+        
+        self.widgets = [self._spinbox, self._spinbox_1, self._spinbox_2, self._spinbox_3]
+        
+        try:
+            self._entry =   int(self._spinbox.get())
+            self._entry_1 = int(self._spinbox_1.get())
+            self._entry_2 = int(self._spinbox_2.get())
+            self._entry_3 = int(self._spinbox_3.get())
+            self.return_value = (self._entry, self._entry_1, self._entry_2, self._entry_3)
+            
+        except OSError:
+            
+            return self.return_error(message="Type Error", widgets=self.widgets)
+            
+        if self._entry_1 > self._entry_2:
+            return self.return_error(message="Index Error", widgets=self.widgets)
+        if self._entry_1 <= -1:
+            return self.return_error(message="Index Error", widgets=self.widgets)
+        if self._entry_1 > len(config.actions) or self._entry_2 > len(config.actions):
+            return self.return_error(message="Index Error", widgets=self.widgets)
+            
+        return self.return_value
+
+if __name__ == "__main__":
+    dialog = RemoveActionDialog(
+        text="ID of action to move:",
+        text_1="Index of destination:",
+        title="Move Action",
+    )
+    print("CTkInputDialog:", dialog.get_input())
