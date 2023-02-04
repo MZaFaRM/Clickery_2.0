@@ -1,4 +1,3 @@
-from tkinter.filedialog import asksaveasfile
 import views.dialogs.dialogs as dialogs
 from views.dialogs.directory import folder
 from control.pickler import insert_event, save_events
@@ -203,62 +202,8 @@ def duplicate_action_event(app):
         return insert_event(None, app)
     return 0
 
+
 def find(actions, action_id=None):
     for item in actions:
         if item["id"] == action_id:
             return item
-
-
-# class ToModify:
-
-#     def Pop(id=0):
-
-#         if not id:
-#             # Delete last action
-#             try:
-#                 delete = config.record.pop()
-
-#             except IndexError:
-#                 align_text(
-#                     "[#D2001A italic]No actions to remove",
-#                     "",
-#                     ":cross_mark:",
-#                     increment="None",
-#                 )
-
-#                 return
-#         else:
-#             delete = config.record.pop(id - 1)
-
-#         align_text(
-#             f"[#7D9D9C italic]{delete}",
-#             "removed",
-#             ":wilted_flower:",
-#             description_style=False,
-#             increment="Negative",
-#         )
-
-
-
-#     def TakeScreenshot():
-#         # Declares dictionaries
-#         action = {}
-
-#         files = [("image files", "*.png")]
-#         file = asksaveasfile(filetypes=files, defaultextension=files)
-
-#         # Checks if the user provided a location
-#         if file:
-
-#             # 'file' is an io.TextWrapper
-#             # Take screenshot and save it to the given location
-#             location = file.name
-#             file.close()
-#             # os.remove(location)
-#             action["screenshot"] = location
-
-#             # Saving to config
-#             return action
-
-#         else:
-#             return 0

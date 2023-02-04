@@ -73,10 +73,10 @@ class App(customtkinter.CTk):
         )
 
 
-        self.switch_1 = customtkinter.CTkSwitch(
+        self.mouse_functions = customtkinter.CTkSwitch(
             self.sidebar_frame, text="Track Mouse", command=self.mouse_event
         )
-        self.switch_1.grid(row=5, column=0, pady=10, padx=20, sticky="n")
+        self.mouse_functions.grid(row=5, column=0, pady=10, padx=20, sticky="n")
         
         
         self.appearance_mode_label.grid(row=7, column=0, padx=20, pady=(10, 0))
@@ -92,34 +92,38 @@ class App(customtkinter.CTk):
         self.scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = customtkinter.CTkOptionMenu(
             self.sidebar_frame,
-            values=["80%", "90%", "100%", "110%", "120%"],
+            values=["80%", "90%", "100%"],
             command=self.change_scaling_event,
         )
         self.scaling_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 20))
 
+        # create textbox
+        self.textbox = customtkinter.CTkTextbox(self, width=250, wrap="word")
+        self.textbox.grid(row=0, column=1, padx=(20, 0), pady=(20, 20), sticky="nsew", rowspan=4)
+        
+        
         # create main entry and button
-        self.entry = customtkinter.CTkEntry(self, placeholder_text="CTkEntry")
-        self.entry.grid(
-            row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew"
+        self.exception_field = customtkinter.CTkTextbox(self, wrap="word")
+        self.exception_field.grid(
+            row=3, column=2, padx=(20, 20), pady=(0, 20), sticky="nsew"
         )
 
-        self.main_button_1 = customtkinter.CTkButton(
+        self.main_button = customtkinter.CTkButton(
             master=self,
             fg_color="transparent",
+            text="Start Execution",
             border_width=2,
             text_color=("gray10", "#DCE4EE"),
+            command=lambda: pickler.play_recorded_event(self)
         )
-        self.main_button_1.grid(
-            row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew"
+        self.main_button.grid(
+            row=2, column=2, padx=(20, 20), pady=(20, 20), sticky="nsew"
         )
 
-        # create textbox
-        self.textbox = customtkinter.CTkTextbox(self, width=250)
-        self.textbox.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
         # create tabview
         self.tabview = customtkinter.CTkTabview(self, width=250)
-        self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.tabview.grid(row=0, column=2, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.tabview.add("Save")
         self.tabview.add("Modify")
         self.tabview.add("Export")
@@ -148,6 +152,13 @@ class App(customtkinter.CTk):
             command=lambda: general.duplicate_action_event(self)
         )
         self.input_duplicate_event.grid(row=1, column=0, padx=20, pady=(30, 10))
+        
+        self.export_as_json_event = customtkinter.CTkButton(
+            self.tabview.tab("Export"),
+            text="JSON",
+            command=lambda: pickler.export_as_json(self)
+        )
+        self.export_as_json_event.grid(row=0, column=0, padx=20, pady=(30, 10))
 
         self.input_remove_event = customtkinter.CTkButton(
             self.tabview.tab("Modify"),
@@ -156,64 +167,9 @@ class App(customtkinter.CTk):
         )
         self.input_remove_event.grid(row=2, column=0, padx=20, pady=(10, 10))
 
-        # create radiobutton frame
-        self.radiobutton_frame = customtkinter.CTkFrame(self)
-        self.radiobutton_frame.grid(
-            row=0, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew"
-        )
-        self.radio_var = tkinter.IntVar(value=0)
-        self.label_radio_group = customtkinter.CTkLabel(
-            master=self.radiobutton_frame, text="CTkRadioButton Group:"
-        )
-        self.label_radio_group.grid(
-            row=0, column=2, columnspan=1, padx=10, pady=10, sticky=""
-        )
-        self.radio_button_1 = customtkinter.CTkRadioButton(
-            master=self.radiobutton_frame, variable=self.radio_var, value=0
-        )
-        self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_2 = customtkinter.CTkRadioButton(
-            master=self.radiobutton_frame, variable=self.radio_var, value=1
-        )
-        self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_3 = customtkinter.CTkRadioButton(
-            master=self.radiobutton_frame, variable=self.radio_var, value=2
-        )
-        self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
-
-        # create checkbox and switch frame
-        self.checkbox_slider_frame = customtkinter.CTkFrame(self)
-        self.checkbox_slider_frame.grid(
-            row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew"
-        )
-
-        
-        self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_2.grid(row=2, column=0, pady=10, padx=20, sticky="n")
-        self.switch_2 = customtkinter.CTkSwitch(master=self.checkbox_slider_frame)
-        self.switch_2.grid(row=4, column=0, pady=(10, 20), padx=20, sticky="n")
-        
-        self.error_panel_label = customtkinter.CTkLabel(
-            self,
-            text="Error Panel",
-            font=customtkinter.CTkFont(size=20, weight="bold"),
-        )
-        self.error_panel_label.grid(row=1, column=0, columnspan=2, padx=0, pady=(0, 0))
-
-
-        self.exception_field = customtkinter.CTkTextbox(
-            self, height = 10
-        )
-        self.exception_field.grid(
-            row=2, column=1, columnspan=2, padx=(20, 0), pady=(0, 0), sticky="nsew"
-        )
-
         # set default values
-        self.checkbox_2.configure(state="disabled")
-        self.switch_2.configure(state="disabled")
-        self.switch_1.deselect()
+        self.mouse_functions.deselect()
         self.toggle = False
-        self.radio_button_3.configure(state="disabled")
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
         self.textbox.insert(
@@ -224,7 +180,7 @@ class App(customtkinter.CTk):
     
         
     def mouse_event(self):
-        print("hi")
+
         if not self.toggle:
             general.MouseEventControl().mouse_event(app=self)
             self.toggle = True

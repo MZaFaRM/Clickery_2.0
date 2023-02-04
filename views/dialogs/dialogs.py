@@ -40,7 +40,7 @@ class HotKeyInputDialog(components.BaseDialog, customtkinter.CTkToplevel):
         self.destroy()
 
     def _on_closing(self):
-        unhook_all()
+
         self.grab_release()
         self.destroy()
 
