@@ -52,7 +52,7 @@ class MouseEventControl():
         action = {}
 
         # Saves action
-        action["l-click"] = 1
+        action["left_click"] = 1
 
         return action
 
@@ -62,7 +62,7 @@ class MouseEventControl():
         action = {}
 
         # Saves action
-        action["r-click"] = 1
+        action["right_click"] = 1
 
         return action
     
@@ -163,7 +163,10 @@ def remove_action_event(app):
     action_id = dialog.get_input()
     if action_id:
         from universal import config
-        del config.actions[action_id[0] : action_id[1] + 1]
+        # get the index of the element from the list based on user's input
+        action_id_1 = config.actions.index(find(config.actions, action_id[0]))
+        action_id_2 = config.actions.index(find(config.actions, action_id[1]))
+        del config.actions[action_id_1 : action_id_2 + 1]
         print("InputDialog:", action_id)
         return insert_event(None, app)
     return 0
@@ -178,25 +181,31 @@ def duplicate_action_event(app):
         title="Duplicate Actions",
     )
     action_id = dialog.get_input()
+    
     if action_id:
+        
         from universal import config
         # slice and get the part ot repeat
         index_from = find(config.actions, action_id[1])
         index_to = find(config.actions, action_id[2])
         
-        to_repeat = config.actions[config.actions.index(index_from): config.actions.index(index_to)+1]
-        print(to_repeat)
-        to_repeat = action_id[0] * to_repeat
+        to_repeat = config.actions[config.actions.index(index_from): config.actions.index(index_to) + 1]
+
+        to_repeat *= action_id[0]
         
         # gets the elements from the list
         action = find(config.actions, action_id[3])
         
-        # gets the id of the element
-        id_index = config.actions.index(action)
+        if action:       
+            # gets the id of the element
+            id_index = config.actions.index(action)
+            
+        else:      
+            id_index = 0
         
         # insert action back to list
         for action in reversed(to_repeat):
-            config.actions.insert(id_index+1, action)
+            config.actions.insert(id_index, action)
             
         print("InputDialog:", action_id)
         return insert_event(None, app)
@@ -207,3 +216,4 @@ def find(actions, action_id=None):
     for item in actions:
         if item["id"] == action_id:
             return item
+    return 0

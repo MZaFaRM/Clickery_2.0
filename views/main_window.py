@@ -174,7 +174,7 @@ class App(customtkinter.CTk):
         self.scaling_optionemenu.set("100%")
         self.textbox.insert(
             "0.0",
-            "[{\"wait_key\":\"caps lock\",\"id\": 1},{\"key\": \"esc\",\"id\": 2}]",
+            '0. write "hello world"\n1. Move cursor (987, 876)',
         )
         self.exception_field.configure(state="disabled")
     

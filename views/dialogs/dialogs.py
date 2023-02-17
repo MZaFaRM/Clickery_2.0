@@ -227,7 +227,7 @@ class RemoveActionDialog(components.BaseDialog, customtkinter.CTkToplevel):
             
         if self._entry_1 < self._entry:
             return self.return_error(message="Index Error", widgets=self.widgets)
-        if self._entry <= -1:
+        if self._entry <= 0:
             return self.return_error(message="Index Error", widgets=self.widgets)
         if self._entry > len(config.actions) or self._entry_1 > len(config.actions):
             return self.return_error(message="Index Error", widgets=self.widgets)
@@ -245,7 +245,8 @@ class RemoveActionDialog(components.BaseDialog, customtkinter.CTkToplevel):
             1000,
             lambda: (
                 [item.configure(text_color=self._entry_text_color) for item in widgets],
-                [item.delete(0, "end") for item in widgets]
+                [item.delete(0, "end") for item in widgets],
+                [item.insert(0, "0") for item in widgets]
             ),
         )
             
@@ -430,7 +431,7 @@ class DuplicateActionDialog(RemoveActionDialog, components.BaseDialog, customtki
             
         if self._entry_1 > self._entry_2:
             return self.return_error(message="Index Error", widgets=self.widgets)
-        if self._entry_1 <= -1:
+        if self._entry_1 <= 0:
             return self.return_error(message="Index Error", widgets=self.widgets)
         if self._entry_1 > len(config.actions) or self._entry_2 > len(config.actions):
             return self.return_error(message="Index Error", widgets=self.widgets)

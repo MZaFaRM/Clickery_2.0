@@ -4,6 +4,7 @@ import json
 from tkinter.filedialog import asksaveasfile
 import pyautogui
 import keyboard
+from control.JSON_lingualizer import JSON_lingualizer, lang_to_json
 
 from time import sleep
 from PIL import Image
@@ -13,13 +14,14 @@ import time
 def save_events(app):
     try:
         events = app.textbox.get('0.0', 'end')
-        events = json.loads(events)
+        events = lang_to_json(events)
         events = add_id(events)
         app.exception_display(None)
         config.actions = events
         clean_data(app)
 
         return config.actions
+    
     except Exception as ex:
 
         app.exception_display(ex)
@@ -31,7 +33,7 @@ def clean_data(app):
     config.actions = add_id(config.actions)
 
     app.textbox.delete('0.0', 'end')
-    app.textbox.insert('0.0', json.dumps(config.actions, indent=2))
+    app.textbox.insert('0.0', JSON_lingualizer(config.actions))
 
 
 def insert_event(event, app):
@@ -45,7 +47,7 @@ def add_id(events):
 
     for (i, event) in enumerate(events):
         new_event = dict(event)
-        new_event['id'] = i
+        new_event['id'] = i + 1
         events[i] = new_event
 
     return events
@@ -117,7 +119,7 @@ class PlayRecorded():
                     pyautogui.moveTo(position['x'], position['y'],
                                     config.Move_Speed,
                                     pyautogui.easeOutQuad)
-                elif key == 'l-click':
+                elif key == 'left_click':
 
                 # For left Clicking
 
@@ -130,7 +132,7 @@ class PlayRecorded():
                     (x, y) = pyautogui.position()
                     current_position['x'] = x
                     current_position['y'] = y
-                elif key == 'r-click':
+                elif key == 'right_click':
 
                 # For right Clicking
 
@@ -201,18 +203,9 @@ class PlayRecorded():
                 elif key == 'wait_key':
                     i += 1
                     keyboard.wait(action['wait_key'])
+                
+                elif key == 'id':
+                    pass
+                    
                 else:
-                    continue
-                
-                
-    # Move cursor to (935, 697)
-    # Left click
-    # Right click
-    # Drag cursor to (1031, 955)
-    # Enter text "Hello World"
-    # Wait 1 second
-    # Wait for image "C:/Users/images/image-to-search.png"
-    # Wait for key input
-    # Insert key "shift"
-    # Insert hotkey "ctrl + C"
-    # Take screenshot "C:/Users/images/Screenshot.png"
+                    raise KeyError(f"Invalid action'{action}'")
